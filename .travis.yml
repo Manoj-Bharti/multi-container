@@ -1,0 +1,20 @@
+sudo: required
+services: 
+  - docker
+
+before_install:
+  - docker build -t manojdec22/multi-container-client -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true manojdec22/multi-container-client npm test
+
+after_success:
+  - docker build -t manojdec22/multi-container-client ./client
+  - docker build -t manojdec22/multi-container-nginx ./nginx
+  - docker build -t manojdec22/multi-container-server ./server 
+  - docker build -t manojdec22/multi-container-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker push manojdec22/multi-container-client
+  - docker push manojdec22/multi-container-nginx
+  - docker push manojdec22/multi-container-server
+  - docker push manojdec22/multi-container-worker
